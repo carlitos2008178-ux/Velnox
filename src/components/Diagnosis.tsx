@@ -29,29 +29,38 @@ const leaks = [
 
 export default function Diagnosis() {
   return (
-    <section id="diagnostico" className="border-b border-border/60 bg-secondary/40">
-      <div className="mx-auto max-w-6xl px-6 py-20">
-        <Reveal className="max-w-2xl">
-          <Eyebrow>El diagnóstico</Eyebrow>
-          <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight md:text-4xl">
-            Tres fugas de facturación que tu restaurante probablemente tiene ahora mismo
-          </h2>
-        </Reveal>
+    <section id="diagnostico" className="relative">
+      <div className="mx-auto max-w-6xl px-6 py-28">
+        <div className="grid gap-8 md:grid-cols-[1fr_1.4fr] md:items-end">
+          <Reveal>
+            <Eyebrow number="01">El diagnóstico</Eyebrow>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <h2 className="text-4xl font-medium leading-[1.05] md:text-5xl">
+              <span className="text-fade">Tres fugas de facturación que tu restaurante </span>
+              <span className="text-gradient">probablemente tiene ahora mismo</span>
+            </h2>
+          </Reveal>
+        </div>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
+        <div className="mt-16 grid gap-4 md:grid-cols-3">
           {leaks.map((leak, i) => (
             <Reveal key={leak.title} delay={i * 0.12}>
               <motion.div
                 whileHover={{ y: -6 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                className="group h-full rounded-2xl border border-border bg-card p-7 shadow-sm transition-shadow hover:shadow-xl hover:shadow-black/5"
+                transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+                className="card-glass group relative h-full overflow-hidden rounded-3xl p-7"
               >
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                  <leak.icon size={20} />
+                <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-glow-violet opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-30" />
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs text-muted-foreground">0{i + 1}</span>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-white/[0.04] text-foreground">
+                    <leak.icon size={18} />
+                  </div>
                 </div>
-                <p className="mt-5 font-display text-2xl font-extrabold text-primary">{leak.amount}</p>
-                <h3 className="mt-3 text-lg font-semibold">{leak.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{leak.description}</p>
+                <p className="mt-10 text-3xl font-medium tracking-tight text-gradient">{leak.amount}</p>
+                <h3 className="mt-4 text-xl font-medium">{leak.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{leak.description}</p>
               </motion.div>
             </Reveal>
           ))}

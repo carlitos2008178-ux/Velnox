@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
-import { ArrowRight, PlayCircle } from 'lucide-react'
 import CountUp from './motion/CountUp'
+import Eyebrow from './Eyebrow'
+import Button from './ui/Button'
 
 const rows = [
   { label: 'Reservas fuera de horario', value: 1620 },
@@ -8,108 +9,106 @@ const rows = [
   { label: 'Horas administrativas liberadas', value: 1350 },
 ]
 
+const ease = [0.22, 1, 0.36, 1] as const
+
 export default function Hero() {
   return (
-    <section id="top" className="relative overflow-hidden border-b border-border/60">
+    <section id="top" className="relative overflow-hidden">
       <div className="absolute inset-0 bg-grid" />
       <div className="absolute inset-0 bg-noise" />
-      <div className="animate-float-slow pointer-events-none absolute -top-32 right-[-8%] h-[30rem] w-[30rem] rounded-full opacity-[0.18] blur-3xl" style={{ background: 'var(--primary)' }} />
-      <div className="animate-float-slower pointer-events-none absolute bottom-[-10%] left-[-8%] h-[24rem] w-[24rem] rounded-full opacity-[0.12] blur-3xl" style={{ background: 'var(--primary)' }} />
+      <div className="animate-float-slow pointer-events-none absolute -top-40 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-glow-violet opacity-25 blur-[140px]" />
+      <div className="animate-float-slower pointer-events-none absolute top-40 -left-40 h-[26rem] w-[26rem] rounded-full bg-glow-blue opacity-25 blur-[120px]" />
 
-      <div className="relative mx-auto grid max-w-6xl gap-12 px-6 py-20 md:grid-cols-2 md:items-center md:py-28">
-        <div>
-          <motion.span
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-primary shadow-sm"
-          >
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
-            Infraestructura de IA para restaurantes
-          </motion.span>
+      <div className="relative mx-auto max-w-6xl px-6 pt-40 pb-12 md:pt-48">
+        <div className="mx-auto max-w-4xl text-center">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease }}>
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-white/[0.04] px-4 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em] sm:text-[11px] sm:tracking-[0.16em] text-muted-foreground backdrop-blur">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-glow-violet" />
+              Infraestructura de IA para restaurantes
+            </span>
+          </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-6 font-display text-4xl font-extrabold leading-[1.08] tracking-tight md:text-5xl"
+            initial={{ opacity: 0, y: 28, filter: 'blur(8px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.8, delay: 0.1, ease }}
+            className="mt-8 text-5xl font-medium leading-[1.02] md:text-7xl"
           >
-            Recuperamos la facturación que{' '}
-            <span className="bg-gradient-to-r from-primary to-[oklch(45%_.09_251.792)] bg-clip-text text-transparent">
-              tu restaurante pierde
-            </span>{' '}
-            cada semana
+            <span className="text-fade">Recuperamos la facturación que </span>
+            <span className="text-gradient">tu restaurante pierde</span>
+            <span className="text-fade"> cada semana</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-6 max-w-lg text-lg text-muted-foreground"
+            transition={{ duration: 0.7, delay: 0.25, ease }}
+            className="mx-auto mt-7 max-w-2xl text-lg text-muted-foreground"
           >
-            No te entregamos un chatbot para que aprendas a usarlo. Implantamos un sistema de IA que
-            gestiona reservas, reduce no-shows y libera a tu equipo de tareas administrativas —
-            operando 24/7, en piloto automático.
+            Implantamos un sistema de IA que gestiona reservas, reduce no-shows y libera a tu equipo de tareas
+            administrativas — operando 24/7, en piloto automático.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-8 flex flex-col gap-3 sm:flex-row"
+            transition={{ duration: 0.7, delay: 0.35, ease }}
+            className="mt-10 flex flex-col justify-center gap-3 sm:flex-row"
           >
-            <a
-              href="#auditoria"
-              className="group inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3.5 text-center text-sm font-semibold text-primary-foreground transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/25"
-            >
-              Solicitar auditoría gratuita
-              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-            </a>
-            <a
-              href="#sistema"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-7 py-3.5 text-center text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
-            >
-              <PlayCircle size={16} />
+            <Button href="#auditoria">Solicitar auditoría gratuita</Button>
+            <Button href="#sistema" variant="ghost">
               Ver cómo funciona
-            </a>
+            </Button>
           </motion.div>
 
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-4 text-xs font-medium text-muted-foreground"
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="mt-5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground/80"
           >
-            Auditoría de facturación perdida sin compromiso · Valor 600 €, gratis para los primeros clientes.
+            Valor 600 € · Gratis para los primeros clientes
           </motion.p>
         </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 32, scale: 0.96 }}
+          initial={{ opacity: 0, y: 48, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.7, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-          className="relative"
+          transition={{ duration: 0.9, delay: 0.45, ease }}
+          className="relative mx-auto mt-20 max-w-3xl"
         >
-          <div className="rounded-2xl border border-border bg-card/90 p-6 shadow-2xl shadow-black/10 backdrop-blur">
-            <p className="text-sm font-semibold text-muted-foreground">Facturación recuperada · este mes</p>
-            <p className="mt-2 font-display text-4xl font-extrabold">
-              +<CountUp value={4970} decimals={0} /> €
-            </p>
-            <div className="mt-6 space-y-4">
+          <div className="pointer-events-none absolute -inset-8 rounded-[2.5rem] bg-gradient-to-r from-glow-blue/30 via-glow-violet/30 to-glow-pink/20 blur-3xl" />
+          <div className="card-gradient-border relative rounded-3xl p-6 md:p-8">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <Eyebrow>Facturación recuperada · este mes</Eyebrow>
+                <p className="mt-4 text-5xl font-medium tracking-tight md:text-6xl">
+                  +<CountUp value={4970} /> €
+                </p>
+              </div>
+              <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.14em] text-emerald-300">
+                ● En directo
+              </span>
+            </div>
+            <div className="mt-8 grid gap-3 md:grid-cols-3">
               {rows.map((row) => (
-                <div key={row.label} className="flex items-center justify-between border-b border-border/60 pb-3 text-sm">
-                  <span className="text-muted-foreground">{row.label}</span>
-                  <span className="font-semibold">
+                <div key={row.label} className="card-glass rounded-2xl p-4">
+                  <p className="text-xs text-muted-foreground">{row.label}</p>
+                  <p className="mt-2 text-2xl font-medium">
                     <CountUp value={row.value} /> €
-                  </span>
+                  </p>
                 </div>
               ))}
             </div>
-            <div className="mt-6 rounded-xl bg-secondary p-4 text-sm text-muted-foreground">
+            <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
               Sistema Mesa Llena™ — panel mensual con resultados en tiempo real
-            </div>
+            </p>
           </div>
         </motion.div>
+      </div>
+
+      <div className="relative select-none overflow-hidden" aria-hidden>
+        <p className="wordmark text-center text-[22vw] font-semibold leading-[0.8] tracking-[-0.06em]">VELNOX</p>
       </div>
     </section>
   )
