@@ -25,3 +25,6 @@ dist-ssr
 
 # Claude Code tooling (not part of the site)
 .claude
+
+.vercel
+.env*
