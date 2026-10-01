@@ -2,7 +2,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { defineConfig, loadEnv, type Connect, type Plugin } from 'vite'
-import { askVelia, VeliaError } from './server/velia.ts'
+import { askVelia, checkRateLimit, VeliaError } from './server/velia.ts'
 
 // Expone POST /api/velia en `npm run dev` y `npm run preview`.
 // La clave se lee de .env.local (ANTHROPIC_API_KEY) y nunca se envía al navegador.
@@ -11,6 +11,10 @@ function veliaApi(apiKey: string | undefined): Plugin {
     if (req.url !== '/api/velia') return next()
     if (req.method !== 'POST') return sendJson(res, 405, { error: 'Método no permitido' })
     readJson(req)
+      .then((body) => {
+        checkRateLimit(req.socket.remoteAddress ?? 'local')
+        return body
+      })
       .then((body) => askVelia(apiKey, (body as { messages?: unknown })?.messages))
       .then((reply) => sendJson(res, 200, { reply }))
       .catch((error) => {

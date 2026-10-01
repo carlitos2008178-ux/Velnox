@@ -1,6 +1,6 @@
 import { Mesh, Program, Renderer, Triangle, Vec3 } from 'ogl'
-import { useEffect, useRef, useState } from 'react'
-import { LoaderCircle, Mic, Square } from 'lucide-react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { ArrowUp, LoaderCircle, Mic, Square } from 'lucide-react'
 
 // Orbe WebGL basado en "Orb" de React Bits (MIT). Al pulsarlo escucha la pregunta,
 // la envía a VelIA (/api/velia, Claude) y lee la respuesta en voz alta.
@@ -175,6 +175,7 @@ export default function VoiceOrb({ hue = 0, className = '' }: { hue?: number; cl
   const [phase, setPhaseState] = useState<Phase>('idle')
   const [error, setError] = useState<string | null>(null)
   const [reply, setReply] = useState<string | null>(null)
+  const [draft, setDraft] = useState('')
   const audioRef = useRef<{ stream: MediaStream; ctx: AudioContext; raf: number } | null>(null)
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
   const historyRef = useRef<Turn[]>([])
@@ -348,6 +349,16 @@ export default function VoiceOrb({ hue = 0, className = '' }: { hue?: number; cl
     rec.start()
   }
 
+  function onSubmitText(e: FormEvent) {
+    e.preventDefault()
+    const question = draft.trim()
+    if (!question) return
+    stopAll()
+    setError(null)
+    setDraft('')
+    void ask(question)
+  }
+
   async function ask(question: string) {
     setPhase('thinking')
     const history: Turn[] = [...historyRef.current, { role: 'user', content: question }]
@@ -416,6 +427,24 @@ export default function VoiceOrb({ hue = 0, className = '' }: { hue?: number; cl
       <p className="-mt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground" aria-live="polite">
         {status}
       </p>
+      <form onSubmit={onSubmitText} className="flex w-full max-w-[16rem] items-center gap-1 rounded-full border border-border bg-white/[0.04] p-1">
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          maxLength={500}
+          placeholder="O escribe tu pregunta…"
+          aria-label="Escribe tu pregunta para VelIA"
+          className="min-w-0 flex-1 bg-transparent px-3 py-1.5 text-xs outline-none placeholder:text-muted-foreground"
+        />
+        <button
+          type="submit"
+          disabled={!draft.trim() || phase === 'thinking'}
+          aria-label="Enviar pregunta"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-black transition-opacity disabled:opacity-30"
+        >
+          <ArrowUp size={14} />
+        </button>
+      </form>
       {reply && (
         <p className="max-h-40 max-w-[16rem] overflow-y-auto text-center text-xs leading-relaxed text-muted-foreground">
           {reply}

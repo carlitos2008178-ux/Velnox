@@ -37,6 +37,23 @@ export class VeliaError extends Error {
   }
 }
 
+// Límite por visitante para que nadie gaste el saldo de la API. Vive en memoria,
+// así que en Vercel es aproximado (cada instancia lleva su propia cuenta).
+const RATE_LIMIT = 20
+const RATE_WINDOW_MS = 60 * 60 * 1000
+const hits = new Map<string, number[]>()
+
+export function checkRateLimit(ip: string) {
+  const now = Date.now()
+  const recent = (hits.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS)
+  if (recent.length >= RATE_LIMIT) {
+    throw new VeliaError(429, 'Has hecho muchas preguntas seguidas. Vuelve a intentarlo en un rato.')
+  }
+  recent.push(now)
+  hits.set(ip, recent)
+  if (hits.size > 10_000) hits.clear()
+}
+
 let client: Anthropic | null = null
 
 export async function askVelia(apiKey: string | undefined, history: unknown): Promise<string> {
