@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Mail, Phone } from 'lucide-react'
 import RollText from './ui/RollText'
+import VoiceOrb from './VoiceOrb'
 
 const product = [
   { href: '#diagnostico', label: 'Diagnóstico' },
@@ -19,7 +20,7 @@ export default function Footer() {
   return (
     <footer className="relative overflow-hidden border-t border-border bg-background">
       <div className="mx-auto max-w-6xl px-6 pt-20">
-        <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+        <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr_auto]">
           <div>
             <a href="#top" className="flex items-center gap-2 text-lg font-semibold tracking-[0.2em]">
               <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-glow-blue to-glow-violet" />
@@ -72,6 +73,8 @@ export default function Footer() {
               </li>
             ))}
           </FooterCol>
+
+          <VoiceOrb className="justify-self-center md:justify-self-end" />
         </div>
 
         <div className="mt-16 flex flex-col justify-between gap-2 border-t border-border py-6 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground sm:flex-row">
