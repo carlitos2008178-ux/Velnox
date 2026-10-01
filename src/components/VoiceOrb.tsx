@@ -1,9 +1,10 @@
 import { Mesh, Program, Renderer, Triangle, Vec3 } from 'ogl'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ArrowUp, LoaderCircle, Mic, Square } from 'lucide-react'
+import { answerQuestion } from '../velia/answers'
 
 // Orbe WebGL basado en "Orb" de React Bits (MIT). Al pulsarlo escucha la pregunta,
-// la envía a VelIA (/api/velia, Claude) y lee la respuesta en voz alta.
+// busca la respuesta preparada de VelIA (src/velia/answers.ts) y la lee en voz alta.
 
 const vert = /* glsl */ `
   precision highp float;
@@ -178,8 +179,7 @@ export default function VoiceOrb({ hue = 0, className = '' }: { hue?: number; cl
   const [draft, setDraft] = useState('')
   const audioRef = useRef<{ stream: MediaStream; ctx: AudioContext; raf: number } | null>(null)
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
-  const historyRef = useRef<Turn[]>([])
-  const requestRef = useRef<AbortController | null>(null)
+  const thinkTimerRef = useRef<number | null>(null)
 
   const setPhase = (p: Phase) => {
     phaseRef.current = p
@@ -298,8 +298,8 @@ export default function VoiceOrb({ hue = 0, className = '' }: { hue?: number; cl
     recognitionRef.current?.abort()
     recognitionRef.current = null
     stopMic()
-    requestRef.current?.abort()
-    requestRef.current = null
+    if (thinkTimerRef.current !== null) window.clearTimeout(thinkTimerRef.current)
+    thinkTimerRef.current = null
     window.speechSynthesis?.cancel()
   }
 
@@ -341,7 +341,7 @@ export default function VoiceOrb({ hue = 0, className = '' }: { hue?: number; cl
       recognitionRef.current = null
       stopMic()
       if (phaseRef.current !== 'listening') return
-      if (heard) void ask(heard)
+      if (heard) ask(heard)
       else setPhase('idle')
     }
     recognitionRef.current = rec
@@ -356,33 +356,18 @@ export default function VoiceOrb({ hue = 0, className = '' }: { hue?: number; cl
     stopAll()
     setError(null)
     setDraft('')
-    void ask(question)
+    ask(question)
   }
 
-  async function ask(question: string) {
+  function ask(question: string) {
     setPhase('thinking')
-    const history: Turn[] = [...historyRef.current, { role: 'user', content: question }]
-    const ctrl = new AbortController()
-    requestRef.current = ctrl
-    try {
-      const res = await fetch('/api/velia', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history }),
-        signal: ctrl.signal,
-      })
-      const data = (await res.json().catch(() => ({}))) as { reply?: string; error?: string }
-      if (!res.ok || !data.reply) throw new Error(data.error ?? 'VelIA no está disponible ahora mismo')
-      historyRef.current = [...history, { role: 'assistant', content: data.reply }]
-      setReply(data.reply)
-      speak(data.reply)
-    } catch (err) {
-      if (ctrl.signal.aborted) return
-      setError(err instanceof Error ? err.message : 'VelIA no está disponible ahora mismo')
-      setPhase('idle')
-    } finally {
-      if (requestRef.current === ctrl) requestRef.current = null
-    }
+    // Pequeña pausa para que se vea que "piensa" antes de responder.
+    thinkTimerRef.current = window.setTimeout(() => {
+      thinkTimerRef.current = null
+      const answer = answerQuestion(question)
+      setReply(answer)
+      speak(answer)
+    }, 600)
   }
 
   function speak(text: string) {
@@ -455,7 +440,6 @@ export default function VoiceOrb({ hue = 0, className = '' }: { hue?: number; cl
 }
 
 type Phase = 'idle' | 'listening' | 'thinking' | 'speaking'
-type Turn = { role: 'user' | 'assistant'; content: string }
 
 const STATUS: Record<Phase, string> = {
   idle: 'Pulsa y habla',
