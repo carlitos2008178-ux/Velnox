@@ -2,48 +2,50 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { defineConfig, loadEnv, type Connect, type Plugin } from 'vite'
-import { askVelia, checkRateLimit, VeliaError } from './server/velia.ts'
+import { ApiError, parseJson } from './server/common.js'
+import { askVelia, checkVeliaRateLimit } from './server/velia.js'
 
-// Expone POST /api/velia en `npm run dev` y `npm run preview`.
-// La clave se lee de .env.local (ANTHROPIC_API_KEY) y nunca se envía al navegador.
-function veliaApi(apiKey: string | undefined): Plugin {
+type Route = (body: unknown, ip: string) => Promise<unknown>
+
+// Expone las funciones de /api en `npm run dev` y `npm run preview`, igual que en Vercel.
+// Las claves se leen de .env.local y nunca se envían al navegador.
+function apiRoutes(env: Record<string, string>): Plugin {
+  const routes: Record<string, Route> = {
+    '/api/velia': async (body, ip) => {
+      checkVeliaRateLimit(ip)
+      return { reply: await askVelia(env.ANTHROPIC_API_KEY, (body as { messages?: unknown })?.messages) }
+    },
+  }
+
   const handler: Connect.NextHandleFunction = (req, res, next) => {
-    if (req.url !== '/api/velia') return next()
+    const route = req.url ? routes[req.url] : undefined
+    if (!route) return next()
     if (req.method !== 'POST') return sendJson(res, 405, { error: 'Método no permitido' })
-    readJson(req)
-      .then((body) => {
-        checkRateLimit(req.socket.remoteAddress ?? 'local')
-        return body
-      })
-      .then((body) => askVelia(apiKey, (body as { messages?: unknown })?.messages))
-      .then((reply) => sendJson(res, 200, { reply }))
+    readBody(req)
+      .then((text) => route(parseJson(text), req.socket.remoteAddress ?? 'local'))
+      .then((result) => sendJson(res, 200, result))
       .catch((error) => {
-        const status = error instanceof VeliaError ? error.status : 500
-        console.error('[velia]', error)
-        sendJson(res, status, { error: error instanceof VeliaError ? error.message : 'Error interno' })
+        console.error(`[${req.url}]`, error)
+        if (error instanceof ApiError) sendJson(res, error.status, { error: error.message })
+        else sendJson(res, 500, { error: 'Error interno' })
       })
   }
+
   return {
-    name: 'velia-api',
+    name: 'velnox-api',
     configureServer: (server) => void server.middlewares.use(handler),
     configurePreviewServer: (server) => void server.middlewares.use(handler),
   }
 }
 
-function readJson(req: IncomingMessage): Promise<unknown> {
+function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
     let data = ''
     req.on('data', (chunk) => {
       data += chunk
-      if (data.length > 50_000) reject(new VeliaError(413, 'Petición demasiado grande'))
+      if (data.length > 50_000) reject(new ApiError(413, 'Petición demasiado grande'))
     })
-    req.on('end', () => {
-      try {
-        resolve(JSON.parse(data || '{}'))
-      } catch {
-        reject(new VeliaError(400, 'JSON no válido'))
-      }
-    })
+    req.on('end', () => resolve(data))
     req.on('error', reject)
   })
 }
@@ -58,6 +60,6 @@ function sendJson(res: ServerResponse, status: number, body: unknown) {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   return {
-    plugins: [react(), tailwindcss(), veliaApi(env.ANTHROPIC_API_KEY)],
+    plugins: [react(), tailwindcss(), apiRoutes(env)],
   }
 })

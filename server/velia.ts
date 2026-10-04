@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { ApiError, createRateLimiter } from './common.js'
 
 // Lógica de VelIA, el asistente de voz de la web. Se ejecuta en el servidor
 // para que la clave de la API nunca llegue al navegador.
@@ -29,40 +30,22 @@ const MAX_CHARS = 1000
 
 export type VeliaTurn = { role: 'user' | 'assistant'; content: string }
 
-export class VeliaError extends Error {
-  status: number
-  constructor(status: number, message: string) {
-    super(message)
-    this.status = status
-  }
-}
-
-// Límite por visitante para que nadie gaste el saldo de la API. Vive en memoria,
-// así que en Vercel es aproximado (cada instancia lleva su propia cuenta).
-const RATE_LIMIT = 20
-const RATE_WINDOW_MS = 60 * 60 * 1000
-const hits = new Map<string, number[]>()
-
-export function checkRateLimit(ip: string) {
-  const now = Date.now()
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS)
-  if (recent.length >= RATE_LIMIT) {
-    throw new VeliaError(429, 'Has hecho muchas preguntas seguidas. Vuelve a intentarlo en un rato.')
-  }
-  recent.push(now)
-  hits.set(ip, recent)
-  if (hits.size > 10_000) hits.clear()
-}
+// Límite por visitante para que nadie gaste el saldo de la API.
+export const checkVeliaRateLimit = createRateLimiter(
+  20,
+  60 * 60 * 1000,
+  'Has hecho muchas preguntas seguidas. Vuelve a intentarlo en un rato.',
+)
 
 let client: Anthropic | null = null
 
 export async function askVelia(apiKey: string | undefined, history: unknown): Promise<string> {
-  if (!apiKey) throw new VeliaError(500, 'Falta ANTHROPIC_API_KEY en el servidor')
+  if (!apiKey) throw new ApiError(500, 'Falta ANTHROPIC_API_KEY en el servidor')
   client ??= new Anthropic({ apiKey })
 
   const messages = sanitize(history)
   if (messages.length === 0 || messages[messages.length - 1].role !== 'user') {
-    throw new VeliaError(400, 'La conversación debe terminar con una pregunta')
+    throw new ApiError(400, 'La conversación debe terminar con una pregunta')
   }
 
   try {
@@ -87,11 +70,11 @@ export async function askVelia(apiKey: string | undefined, history: unknown): Pr
     return text || 'Perdona, no he podido responder. ¿Puedes repetirlo?'
   } catch (error) {
     if (error instanceof Anthropic.AuthenticationError) {
-      throw new VeliaError(500, 'La clave de la API de Claude no es válida')
+      throw new ApiError(500, 'La clave de la API de Claude no es válida')
     } else if (error instanceof Anthropic.RateLimitError) {
-      throw new VeliaError(429, 'Demasiadas preguntas seguidas, espera un momento')
+      throw new ApiError(429, 'Demasiadas preguntas seguidas, espera un momento')
     } else if (error instanceof Anthropic.APIError) {
-      throw new VeliaError(502, `Error de la API de Claude (${error.status}): ${error.message}`)
+      throw new ApiError(502, `Error de la API de Claude (${error.status}): ${error.message}`)
     }
     throw error
   }

@@ -1,9 +1,32 @@
-import { ArrowUpRight } from 'lucide-react'
+import { useState, type FormEvent } from 'react'
+import { ArrowUpRight, CircleCheck, LoaderCircle } from 'lucide-react'
+import { sendAuditRequest } from '../lib/emailjs'
 import Eyebrow from './Eyebrow'
 import Reveal from './motion/Reveal'
 import RollText from './ui/RollText'
 
+type Status = 'idle' | 'sending' | 'sent' | 'error'
+
 export default function CTA() {
+  const [email, setEmail] = useState('')
+  const [trap, setTrap] = useState('')
+  const [status, setStatus] = useState<Status>('idle')
+  const [error, setError] = useState('')
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault()
+    // Campo trampa relleno: es un bot. Se simula el éxito sin enviar nada.
+    if (trap) return setStatus('sent')
+    setStatus('sending')
+    try {
+      await sendAuditRequest(email.trim())
+      setStatus('sent')
+    } catch {
+      setError('No hemos podido enviar tu solicitud. Inténtalo de nuevo en un minuto o escríbenos a velnoxflow@gmail.com.')
+      setStatus('error')
+    }
+  }
+
   return (
     <section id="auditoria" className="relative overflow-hidden border-t border-border">
       <div className="absolute inset-0 bg-grid [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,black,transparent)]" />
@@ -22,27 +45,75 @@ export default function CTA() {
             dónde se te está escapando el dinero.
           </p>
 
-          <form
-            className="mx-auto mt-10 flex max-w-lg flex-col gap-2 rounded-full border border-border bg-white/[0.04] p-2 backdrop-blur sm:flex-row max-sm:rounded-3xl"
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <input
-              type="email"
-              required
-              placeholder="tu@restaurante.com"
-              aria-label="Tu email"
-              className="w-full rounded-full bg-transparent px-5 py-3 text-sm outline-none placeholder:text-muted-foreground"
-            />
-            <button
-              type="submit"
-              className="group inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-white px-6 py-3 font-mono text-xs font-medium uppercase tracking-[0.12em] text-black transition-shadow hover:shadow-[0_0_40px_-6px_rgba(189,83,251,0.8)]"
+          {status === 'sent' ? (
+            <div
+              role="status"
+              className="card-gradient-border mx-auto mt-10 flex max-w-lg flex-col items-center gap-3 rounded-3xl p-6 text-center"
             >
-              <RollText>Solicitar auditoría</RollText>
-              <ArrowUpRight size={16} className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-            </button>
-          </form>
+              <CircleCheck size={28} className="text-emerald-300" />
+              <p className="text-lg font-medium">¡Solicitud enviada!</p>
+              <p className="text-sm text-muted-foreground">
+                Te hemos mandado un correo de confirmación a <span className="text-foreground">{email}</span>. Nos pondremos
+                en contacto contigo en breve. Si no lo ves, revisa la carpeta de spam.
+              </p>
+            </div>
+          ) : (
+            <form
+              className="mx-auto mt-10 flex max-w-lg flex-col gap-2 rounded-full border border-border bg-white/[0.04] p-2 backdrop-blur sm:flex-row max-sm:rounded-3xl"
+              onSubmit={onSubmit}
+            >
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="tu@restaurante.com"
+                aria-label="Tu email"
+                className="w-full rounded-full bg-transparent px-5 py-3 text-sm outline-none placeholder:text-muted-foreground"
+              />
+              {/* Campo trampa para bots: invisible para las personas. */}
+              <input
+                type="text"
+                name="company"
+                value={trap}
+                onChange={(e) => setTrap(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden
+                className="hidden"
+              />
+              <button
+                type="submit"
+                disabled={status === 'sending'}
+                className="group inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-white px-6 py-3 font-mono text-xs font-medium uppercase tracking-[0.12em] text-black transition-shadow hover:shadow-[0_0_40px_-6px_rgba(189,83,251,0.8)] disabled:opacity-60"
+              >
+                {status === 'sending' ? (
+                  <>
+                    Enviando… <LoaderCircle size={16} className="animate-spin" />
+                  </>
+                ) : (
+                  <>
+                    <RollText>Solicitar auditoría</RollText>
+                    <ArrowUpRight size={16} className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  </>
+                )}
+              </button>
+            </form>
+          )}
+          {status === 'error' && (
+            <p role="alert" className="mt-4 text-sm text-red-300">
+              {error}
+            </p>
+          )}
           <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
             Valor 600 € · Gratis, sin tarjeta ni permanencia
+          </p>
+          <p className="mx-auto mt-3 max-w-md text-xs text-muted-foreground/80">
+            Al enviar tu correo aceptas que te contactemos sobre la auditoría, según nuestra{' '}
+            <a href="/privacidad" target="_blank" rel="noopener" className="underline underline-offset-2 hover:text-foreground">
+              política de privacidad
+            </a>
+            .
           </p>
         </Reveal>
       </div>
