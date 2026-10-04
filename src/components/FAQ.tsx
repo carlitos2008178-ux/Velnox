@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Plus } from 'lucide-react'
 import Eyebrow from './Eyebrow'
 import Reveal from './motion/Reveal'
+import EmailLink, { CONTACT_EMAIL } from './ui/EmailLink'
 
 const faqs = [
   {
@@ -41,9 +42,9 @@ export default function FAQ() {
           </h2>
           <p className="mt-6 max-w-xs text-muted-foreground">
             ¿Tienes otra duda? Escríbenos a{' '}
-            <a href="mailto:velnoxflow@gmail.com" className="text-foreground underline decoration-border underline-offset-4 hover:decoration-glow-violet">
-              velnoxflow@gmail.com
-            </a>
+            <EmailLink className="text-foreground underline decoration-border underline-offset-4 hover:decoration-glow-violet">
+              {CONTACT_EMAIL}
+            </EmailLink>
           </p>
         </Reveal>
 

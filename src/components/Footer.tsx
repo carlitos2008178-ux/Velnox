@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Mail, Phone } from 'lucide-react'
+import EmailLink, { CONTACT_EMAIL } from './ui/EmailLink'
 import RollText from './ui/RollText'
 import VoiceOrb from './VoiceOrb'
 
@@ -43,9 +44,9 @@ export default function Footer() {
 
           <FooterCol title="Contacto">
             <li>
-              <a href="mailto:velnoxflow@gmail.com" className="inline-flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground">
-                <Mail size={14} /> velnoxflow@gmail.com
-              </a>
+              <EmailLink className="inline-flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground">
+                <Mail size={14} /> {CONTACT_EMAIL}
+              </EmailLink>
             </li>
             <li>
               <a href="tel:+34696791722" className="inline-flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground">
