@@ -14,7 +14,7 @@ const product = [
 
 const legal: { href: string; label: string; newTab?: boolean }[] = [
   { href: '/privacidad', label: 'Privacidad', newTab: true },
-  { href: '#', label: 'Términos' },
+  { href: '/terminos', label: 'Términos', newTab: true },
 ]
 
 export default function Footer() {
