@@ -12,8 +12,8 @@ const product = [
   { href: '#faq', label: 'FAQ' },
 ]
 
-const legal = [
-  { href: '#', label: 'Privacidad' },
+const legal: { href: string; label: string; newTab?: boolean }[] = [
+  { href: '/privacidad', label: 'Privacidad', newTab: true },
   { href: '#', label: 'Términos' },
 ]
 
@@ -68,7 +68,11 @@ export default function Footer() {
           <FooterCol title="Legal">
             {legal.map((l) => (
               <li key={l.label}>
-                <a href={l.href} className="group text-muted-foreground transition-colors hover:text-foreground">
+                <a
+                  href={l.href}
+                  {...(l.newTab ? { target: '_blank', rel: 'noopener' } : {})}
+                  className="group text-muted-foreground transition-colors hover:text-foreground"
+                >
                   <RollText>{l.label}</RollText>
                 </a>
               </li>
