@@ -390,7 +390,7 @@ export default function VoiceOrb({ hue = 0, className = '' }: { hue?: number; cl
   const status = error ?? STATUS[phase]
 
   return (
-    <div className={`flex flex-col items-center gap-3 ${className}`}>
+    <div id="velia" className={`flex scroll-mt-24 flex-col items-center gap-3 ${className}`}>
       <button
         type="button"
         onClick={onOrbClick}

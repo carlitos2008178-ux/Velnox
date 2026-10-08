@@ -44,7 +44,11 @@ export default function FAQ() {
             ¿Tienes otra duda? Escríbenos a{' '}
             <EmailLink className="text-foreground underline decoration-border underline-offset-4 hover:decoration-glow-violet">
               {CONTACT_EMAIL}
-            </EmailLink>
+            </EmailLink>{' '}
+            o consúltalo con{' '}
+            <a href="#velia" className="text-foreground underline decoration-border underline-offset-4 hover:decoration-glow-violet">
+              VelIA
+            </a>
           </p>
         </Reveal>
 
