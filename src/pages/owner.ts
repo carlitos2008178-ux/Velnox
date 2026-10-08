@@ -3,7 +3,7 @@
 export const OWNER = {
   name: 'Carlos Martínez Cortés y David Amate Moreno',
   taxId: '[NIF / CIF]',
-  address: '[Domicilio completo]',
+  address: 'Granada',
   brand: 'Velnox',
   phones: '696 79 17 22 / 636 74 72 42',
 }
