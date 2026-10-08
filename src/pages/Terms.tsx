@@ -366,8 +366,8 @@ export default function Terms() {
       <S n={21}>
         <p>
           Estas Condiciones se rigen por la legislación española. Para la resolución de cualquier controversia, y dado que
-          los servicios se dirigen a profesionales, las partes se someten a los juzgados y tribunales del domicilio del
-          titular, con renuncia a cualquier otro fuero que pudiera corresponderles, salvo que la ley disponga
+          los servicios se dirigen a profesionales, las partes se someten a los juzgados y tribunales de Granada,
+          con renuncia a cualquier otro fuero que pudiera corresponderles, salvo que la ley disponga
           imperativamente otra cosa.
         </p>
         <p>

@@ -101,8 +101,6 @@ export function OwnerCard() {
     <dl className="card-glass grid gap-x-6 gap-y-3 rounded-2xl p-6 sm:grid-cols-[10rem_1fr]">
       <Dt>Titulares</Dt>
       <dd>{OWNER.name}</dd>
-      <Dt>Domicilio</Dt>
-      <dd>{OWNER.address}</dd>
       <Dt>Nombre comercial</Dt>
       <dd>{OWNER.brand}</dd>
       <Dt>Correo electrónico</Dt>
